@@ -1,21 +1,16 @@
 var express = require("express");
 var cors = require("cors");
 var bodyParser = require("body-parser");
-var multer = require('multer');
-
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const password = "LMQR923C6hfLyS6q";
 const uri = `mongodb+srv://jucse293981:${password}@cluster0.rkkhvmr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 var app = express();
-app.use(express.json());
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-var upload = multer();
-app.use(upload.array()); 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
-
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -27,9 +22,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
     await client.db("myDatabase").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
@@ -47,15 +40,27 @@ async function run() {
         res.status(500).send("Failed to add product");
       }
     });
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();  // Commented out to keep the connection open
-  }
+
+    app.get("/products", async (req, res) => {
+      try {
+        const cursor = products.find();
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to retrieve products");
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+  } 
 }
+
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 app.listen(4200, () => {

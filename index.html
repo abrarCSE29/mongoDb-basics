@@ -7,11 +7,17 @@
 </head>
 <body>
     <h1>Add New Product</h1>
-    <form action="/addNewProduct" method="post">
+    <form action="http://localhost:4200/addNewProduct" method="post">
         <input type="text" name="name" placeholder="name" id="productName">
         <input type="text" name="pricePerKg" placeholder="pricePerKg" id="pricePerKg">
         <input type="text" name="available" placeholder="availability" id="available">
         <input type="submit" id="submit">
     </form>
+    <script>
+        fetch("http://localhost:4200/products")
+        .then(response => response.json())
+        .then(data => {console.log(data)})
+        .catch(error => console.error('Error fetching products:', error));
+    </script>
 </body>
 </html>
