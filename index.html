@@ -1,23 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Product</title>
 </head>
+
 <body>
     <h1>Add New Product</h1>
-    <form action="http://localhost:4200/addNewProduct" method="post">
-        <input type="text" name="name" placeholder="name" id="productName">
-        <input type="text" name="pricePerKg" placeholder="pricePerKg" id="pricePerKg">
-        <input type="text" name="available" placeholder="availability" id="available">
-        <input type="submit" id="submit">
+    <form id="productForm">
+        <input type="text" name="name" placeholder="name" id="productName" />
+        <input type="text" name="pricePerKg" placeholder="pricePerKg" id="pricePerKg" />
+        <input type="text" name="available" placeholder="availability" id="available" />
+        <input type="submit" id="submit" />
     </form>
+    <div id="updateProduct"></div>
+    <div>
+        <table id="existingproduct" border="1" style="
+          border-collapse: collapse;
+          width: 50%;
+          text-align: center;
+          margin: auto;
+        ">
+            <caption>
+                <h1>Existing Products</h1>
+            </caption>
+            <tr>
+                <th>Name</th>
+                <th>Price per Kg</th>
+                <th>Available</th>
+                <th>Actions</th>
+            </tr>
+            <!-- Product rows will be dynamically generated here -->
+        </table>
+    </div>
+
     <script>
+        var product;
         fetch("http://localhost:4200/products")
-        .then(response => response.json())
-        .then(data => {console.log(data)})
-        .catch(error => console.error('Error fetching products:', error));
+            .then((response) => response.json())
+            .then((data) => {
+                product = data;
+                console.log(product);
+                product.sort((a, b) => a.name.localeCompare(b.name));
+                product.forEach((element) => {
+                    var pd = document.createElement("tr");
+                    pd.innerHTML = `<td style="text-align:left">${element.name}</td>
+                            <td>${element.pricePerKg}</td>
+                            <td>${element.available} kg</td>
+                            <td><button onClick="deleteProduct('${element._id}')">Delete</button>|||<button onClick="updateProduct('${element._id}')">Update</button></td>
+                            `;
+                    document.getElementById("existingproduct").appendChild(pd);
+                });
+            })
+            .catch((error) => console.error("Error fetching products:", error));
+
+        function updateProduct(productId) {
+            fetch(`http://localhost:4200/products/${productId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const updateWindow = document.getElementById("updateProduct");
+                    var ele = `<h3>UpdateProduct</h3>
+                        <input type= "text" name = "name" value=${data.name}>
+                        <input type= "text" name = "pricePerKg" value=${data.pricePerKg}> 
+                        <input type= "text" name = "available" value=${data.available}>
+                        <button onClick="updateProductInfo()">Update</button>
+                        `;
+                    updateWindow.innerHTML = ele;
+                });
+        }
+
+        function deleteProduct(productId) {
+            fetch(`http://localhost:4200/deleteProduct/${productId}`, {
+                method: "DELETE",
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    alert(data);
+                    window.location.reload();
+                });
+        }
+
+        document
+            .getElementById("productForm")
+            .addEventListener("submit", async function (event) {
+                event.preventDefault(); // Prevent the form from submitting the traditional way
+
+                const formData = new FormData(event.target);
+                const productData = {};
+                formData.forEach((value, key) => {
+                    productData[key] = value;
+                });
+                console.log(productData);
+                try {
+                    const response = await fetch(
+                        "http://localhost:4200/addNewProduct",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(productData),
+                        }
+                    );
+
+                    const result = await response.json();
+                    if (response.status === 201) {
+                        alert(result.message);
+                        window.location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error("Error adding product:", error);
+                    alert("Failed to add product");
+                }
+            });
+
+            function updateProductInfo() {
+                const name = document.getElementById('updateProduct').getElementById('name').value;
+                const pricePerKg = document.getElementById('updateProduct').getElementById('pricePerKg').value;
+                const available = document.getElementById('updateProduct').getElementById('available').value;
+            }
     </script>
 </body>
+
 </html>

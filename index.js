@@ -1,7 +1,7 @@
 var express = require("express");
 var cors = require("cors");
 var bodyParser = require("body-parser");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const password = "LMQR923C6hfLyS6q";
 const uri = `mongodb+srv://jucse293981:${password}@cluster0.rkkhvmr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -34,7 +34,7 @@ async function run() {
       console.log(newProduct);
       try {
         await products.insertOne(newProduct);
-        res.status(201).send("Product added successfully");
+        res.status(201).json({ message: "Product added successfully" });
       } catch (err) {
         console.error(err);
         res.status(500).send("Failed to add product");
@@ -49,6 +49,45 @@ async function run() {
       } catch (err) {
         console.error(err);
         res.status(500).send("Failed to retrieve products");
+      }
+    });
+
+    app.get("/products/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const cursor = products.find({_id : new ObjectId(id)});
+        const results = await cursor.toArray();
+        res.send(results[0]);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to retrieve products");
+      }
+    });
+
+   
+
+    app.delete(`/deleteProduct/:id`, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      try {
+        await products.deleteOne({ _id: new ObjectId(id) });
+        res.json({message: "Product deleted successfully"});
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to delete product");
+      }
+    });
+
+    app.put(`/updateProduct/:id`, async (req, res) => {
+      const id = req.params.id;
+      const updatedProduct = req.body;
+      console.log(updatedProduct);
+      try {
+        await products.updateOne({ _id: new ObjectId(id) }, { $set: updatedProduct });
+        res.json({ message: "Product updated successfully" });
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to update product");
       }
     });
 
