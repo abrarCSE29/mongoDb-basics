@@ -62,10 +62,10 @@
                 .then((data) => {
                     const updateWindow = document.getElementById("updateProduct");
                     var ele = `<h3>UpdateProduct</h3>
-                        <input type= "text" name = "name" value=${data.name}>
-                        <input type= "text" name = "pricePerKg" value=${data.pricePerKg}> 
-                        <input type= "text" name = "available" value=${data.available}>
-                        <button onClick="updateProductInfo()">Update</button>
+                        <input type= "text" name = "name" id = "uname" value=${data.name}>
+                        <input type= "text" name = "pricePerKg" id = "upricePerKg" value=${data.pricePerKg}> 
+                        <input type= "text" name = "available"  id = "uavailable" value=${data.available}>
+                        <button onClick="updateProductInfo('${productId}')">Update</button>
                         `;
                     updateWindow.innerHTML = ele;
                 });
@@ -118,11 +118,31 @@
                 }
             });
 
-            function updateProductInfo() {
-                const name = document.getElementById('updateProduct').getElementById('name').value;
-                const pricePerKg = document.getElementById('updateProduct').getElementById('pricePerKg').value;
-                const available = document.getElementById('updateProduct').getElementById('available').value;
-            }
+        function updateProductInfo(productId) {
+
+            const name = document.getElementById('uname').value;
+            const pricePerKg = document.getElementById('upricePerKg').value;
+            const available = document.getElementById('uavailable').value;
+            const product = { _id: productId, name: name, pricePerKg: pricePerKg, available: available };
+            fetch(`http://localhost:4200/updateProduct`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(product),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    alert(data.message);
+                    window.location.reload();
+                })
+                .catch((error) => console.error("Error updating product:", error));
+
+
+        }
+
+
+
     </script>
 </body>
 

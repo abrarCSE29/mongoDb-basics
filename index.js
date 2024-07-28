@@ -78,13 +78,13 @@ async function run() {
       }
     });
 
-    app.put(`/updateProduct/:id`, async (req, res) => {
-      const id = req.params.id;
+    app.put(`/updateProduct`, async (req, res) => {
+      const id = req.body._id;
       const updatedProduct = req.body;
-      console.log(updatedProduct);
+      console.log(updatedProduct.name);
       try {
-        await products.updateOne({ _id: new ObjectId(id) }, { $set: updatedProduct });
-        res.json({ message: "Product updated successfully" });
+        await products.updateOne({ _id: new ObjectId(id) }, { $set: {name : updatedProduct.name, pricePerKg : updatedProduct.pricePerKg, available : updatedProduct.available}});
+        res.json({ message: "Product updated successfully"+updatedProduct.name });
       } catch (err) {
         console.error(err);
         res.status(500).send("Failed to update product");
